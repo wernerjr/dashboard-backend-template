@@ -1,0 +1,52 @@
+{
+  "name": "team-management-backend",
+  "version": "1.0.0",
+  "description": "Team Management Backend API",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "user:change-role": "ts-node src/scripts/changeUserRole.ts"
+  },
+  "keywords": [
+    "team-management",
+    "api",
+    "typescript",
+    "express",
+    "prisma"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "*",
+    "bcryptjs": "*",
+    "cors": "*",
+    "dotenv": "*",
+    "express": "*",
+    "jsonwebtoken": "*",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "zod": "*"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "*",
+    "@types/cors": "*",
+    "@types/express": "*",
+    "@types/jest": "*",
+    "@types/jsonwebtoken": "*",
+    "@types/node": "*",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.7",
+    "jest": "*",
+    "prisma": "*",
+    "ts-jest": "*",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "*"
+  }
+}
