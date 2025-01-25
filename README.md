@@ -120,3 +120,7 @@ This project is licensed under the ISC License - see the [LICENSE](LICENSE) file
 - Prisma
 - TypeScript
 - Node.js community 
+
+## ✨ Author
+
+Made with ❤️ by [Werner](https://github.com/wernerjr)
