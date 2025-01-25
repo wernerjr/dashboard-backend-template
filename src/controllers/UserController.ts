@@ -112,7 +112,7 @@ export class UserController {
 
   updateProfile = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user?.id;
-    const { name, email, currentPassword, newPassword } = req.body;
+    const { name, email } = req.body;
 
     if (!userId) {
       throw new AppError(401, 'Unauthorized');
@@ -145,14 +145,6 @@ export class UserController {
       updateData.email = email;
     }
 
-    if (currentPassword && newPassword) {
-      const isValidPassword = await bcrypt.compare(currentPassword, user.password);
-      if (!isValidPassword) {
-        throw new AppError(401, 'Current password is incorrect');
-      }
-      updateData.password = await bcrypt.hash(newPassword, 10);
-    }
-
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: updateData,
@@ -164,6 +156,55 @@ export class UserController {
       success: true,
       data: {
         user: userWithoutPassword
+      }
+    });
+  });
+
+  changePassword = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!userId) {
+      throw new AppError(401, 'Unauthorized');
+    }
+
+    if (!currentPassword || !newPassword) {
+      throw new AppError(400, 'Current password and new password are required');
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new AppError(404, 'User not found');
+    }
+
+    // Verify current password
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!isValidPassword) {
+      throw new AppError(401, 'Current password is incorrect');
+    }
+
+    // Ensure new password is different from current
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+    if (isSamePassword) {
+      throw new AppError(400, 'New password must be different from current password');
+    }
+
+    // Update password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { 
+        password: hashedPassword,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        message: 'Password changed successfully'
       }
     });
   });
@@ -180,6 +221,7 @@ export class UserController {
         email: true,
         role: true,
         createdAt: true,
+        updatedAt: true,
       },
     });
 
@@ -192,11 +234,18 @@ export class UserController {
   });
 
   deleteUser = asyncHandler(async (req: Request, res: Response) => {
-    if (req.user?.role !== 'ADMIN') {
-      throw new AppError(403, 'Forbidden: Admin access required');
+    const { id } = req.params;
+    const currentUserId = req.user?.id;
+    const currentUserRole = req.user?.role;
+
+    if (!currentUserId) {
+      throw new AppError(401, 'Unauthorized');
     }
 
-    const { id } = req.params;
+    // Allow users to delete their own account or admins to delete any account
+    if (currentUserRole !== 'ADMIN' && id !== currentUserId) {
+      throw new AppError(403, 'You can only delete your own account');
+    }
 
     const user = await prisma.user.findUnique({
       where: { id },
@@ -204,6 +253,17 @@ export class UserController {
 
     if (!user) {
       throw new AppError(404, 'User not found');
+    }
+
+    // Prevent the last admin from being deleted
+    if (user.role === 'ADMIN') {
+      const adminCount = await prisma.user.count({
+        where: { role: 'ADMIN' }
+      });
+
+      if (adminCount <= 1) {
+        throw new AppError(400, 'Cannot delete the last admin account');
+      }
     }
 
     await prisma.user.delete({

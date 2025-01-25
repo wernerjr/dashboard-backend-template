@@ -25,6 +25,7 @@ src/
 - **Authentication**: JWT (JSON Web Tokens)
 - **Password Hashing**: bcrypt
 - **API Security**: CORS, Helmet
+- **Validation**: Zod
 
 ## 💾 Database Schema
 
@@ -58,27 +59,26 @@ interface JWTPayload {
 }
 ```
 
-### Authentication Flow
-1. User submits credentials
-2. Server validates credentials
-3. Server generates JWT token
-4. Client stores token
-5. Token included in subsequent requests
-
-### Authorization Levels
-- **Public**: No authentication required
-- **Authenticated**: Valid JWT required
-- **Admin Only**: Valid JWT with ADMIN role required
+### Password Validation
+```typescript
+const passwordValidator = z.string()
+  .min(8, 'Password must be at least 8 characters')
+  .max(30, 'Password must not exceed 30 characters')
+  .regex(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+    'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+  );
+```
 
 ## 🛣️ API Routes Detail
 
 ### Authentication Routes
-\`\`\`typescript
+```typescript
 POST /api/auth/register
 Body: {
-  name: string;
-  email: string;
-  password: string;
+  name: string;      // min 2 chars
+  email: string;     // valid email format
+  password: string;  // following password rules
   role?: 'USER' | 'ADMIN';
 }
 Response: {
@@ -90,13 +90,14 @@ Response: {
       email: string;
       role: string;
       createdAt: string;
+      updatedAt: string;
     };
     token: string;
   }
 }
-\`\`\`
+```
 
-\`\`\`typescript
+```typescript
 POST /api/auth/login
 Body: {
   email: string;
@@ -110,14 +111,16 @@ Response: {
       name: string;
       email: string;
       role: string;
+      createdAt: string;
+      updatedAt: string;
     };
     token: string;
   }
 }
-\`\`\`
+```
 
 ### User Routes
-\`\`\`typescript
+```typescript
 GET /api/users/profile
 Headers: {
   Authorization: 'Bearer <token>'
@@ -130,21 +133,21 @@ Response: {
       name: string;
       email: string;
       role: string;
+      createdAt: string;
+      updatedAt: string;
     }
   }
 }
-\`\`\`
+```
 
-\`\`\`typescript
+```typescript
 PUT /api/users/profile
 Headers: {
   Authorization: 'Bearer <token>'
 }
 Body: {
-  name?: string;
-  email?: string;
-  currentPassword?: string;
-  newPassword?: string;
+  name?: string;  // min 2 chars
+  email?: string; // valid email format
 }
 Response: {
   success: true;
@@ -154,10 +157,29 @@ Response: {
       name: string;
       email: string;
       role: string;
+      createdAt: string;
+      updatedAt: string;
     }
   }
 }
-\`\`\`
+```
+
+```typescript
+PUT /api/users/change-password
+Headers: {
+  Authorization: 'Bearer <token>'
+}
+Body: {
+  currentPassword: string;
+  newPassword: string;  // following password rules
+}
+Response: {
+  success: true;
+  data: {
+    message: string;
+  }
+}
+```
 
 ## 🛡️ Error Handling
 
@@ -169,52 +191,65 @@ interface ErrorResponse {
     code: number;
     type: string;
     message: string;
-    details?: unknown;
+    details?: Array<{
+      field: string;
+      message: string;
+    }>;
   };
 }
 ```
 
-### Common Error Types
-- **ValidationError**: Invalid input data
-- **AuthenticationError**: Invalid credentials
-- **AuthorizationError**: Insufficient permissions
-- **NotFoundError**: Resource not found
-- **ConflictError**: Resource conflict (e.g., duplicate email)
-
 ## 🔧 Middleware Stack
 
 1. **CORS**: Cross-Origin Resource Sharing
-2. **Express JSON**: JSON body parser
-3. **Express URLEncoded**: Form data parser
-4. **Authentication**: JWT verification
-5. **Error Handler**: Centralized error processing
+   ```typescript
+   cors({
+     origin: process.env.FRONTEND_URL || '*',
+     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+     credentials: true,
+     allowedHeaders: ['Content-Type', 'Authorization']
+   })
+   ```
+
+2. **Request Validation**:
+   ```typescript
+   const validateRequest = (schema: AnyZodObject) => {
+     return async (req: Request, res: Response, next: NextFunction) => {
+       try {
+         const validatedData = await schema.parseAsync(req.body);
+         req.body = validatedData;
+         return next();
+       } catch (error) {
+         // Error handling
+       }
+     };
+   };
+   ```
+
+3. **Authentication**:
+   ```typescript
+   const authenticate = (req: Request, res: Response, next: NextFunction): void => {
+     // JWT verification and user attachment
+   };
+   ```
 
 ## 🛠️ Development Tools
 
-### CLI Commands
-- **Role Management**:
-  ```bash
-  npm run user:change-role
-  ```
-  Interactive CLI tool for managing user roles.
+### CLI Tools
+1. **Role Management**:
+   ```bash
+   npm run user:change-role
+   ```
+   Interactive CLI for managing user roles with validation and confirmation.
 
 ### Database Management
-- **Prisma Studio**:
-  ```bash
-  npm run prisma:studio
-  ```
-  GUI for database management.
+- **Prisma Studio**: GUI for database management
+- **Migrations**: Version-controlled schema changes
+- **Seeding**: Initial data population
 
-### API Documentation
-- **Swagger UI**:
-  ```
-  http://localhost:3001/api-docs
-  ```
-  Interactive API documentation and testing.
+## 📊 Response Standards
 
-## 📊 Response Formats
-
-### Success Response
+### Success Format
 ```typescript
 interface SuccessResponse<T> {
   success: true;
@@ -222,81 +257,62 @@ interface SuccessResponse<T> {
 }
 ```
 
-### Pagination Response
+### Error Format
 ```typescript
-interface PaginatedResponse<T> {
-  success: true;
-  data: {
-    items: T[];
-    total: number;
-    page: number;
-    limit: number;
-  };
+interface ValidationError {
+  field: string;
+  message: string;
+}
+
+interface ErrorDetails {
+  code: number;
+  type: string;
+  message: string;
+  details?: ValidationError[];
 }
 ```
 
-## 🔍 Validation
+## 🔒 Security Implementation
 
-### User Schema
+### Password Hashing
 ```typescript
-const userSchema = {
-  name: string()
-    .min(2)
-    .max(100),
-  email: string()
-    .email()
-    .max(255),
-  password: string()
-    .min(8)
-    .max(100)
-    .regex(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/),
-  role: enum(['USER', 'ADMIN'])
-    .default('USER')
-};
+const hashedPassword = await bcrypt.hash(password, 10);
 ```
 
-## 🔒 Security Measures
+### JWT Generation
+```typescript
+const token = jwt.sign(
+  { id: user.id, role: user.role },
+  process.env.JWT_SECRET!,
+  { expiresIn: '1d' }
+);
+```
 
-1. **Password Security**
-   - Bcrypt hashing with salt rounds = 10
-   - Password strength validation
-   - Secure password reset flow
+## 🚀 Performance Considerations
 
-2. **JWT Security**
-   - Short expiration time (1 day)
-   - Secure secret key requirement
-   - Token invalidation on logout
-
-3. **API Security**
-   - Rate limiting
-   - CORS protection
-   - Input validation
-   - SQL injection protection (via Prisma)
-   - XSS protection
-
-## 🚀 Performance Optimizations
-
-1. **Database**
+1. **Database**:
    - Indexed fields: email, role
    - Selective field queries
-   - Connection pooling
+   - Proper relationship management
 
-2. **API**
+2. **API**:
    - Response compression
    - Proper error handling
-   - Async/await patterns
-   - Proper TypeScript types
+   - Async operations
+   - Input validation
+   - Type safety
 
-## 📈 Monitoring and Logging
+## 📈 Monitoring
 
 ### Error Logging
-- Error type
-- Stack trace (development only)
-- Request information
-- Timestamp
+```typescript
+if (process.env.NODE_ENV === 'development') {
+  console.error(error);
+  // Include stack trace
+}
+```
 
-### Performance Monitoring
-- Response times
-- Database query times
-- Error rates
-- API usage statistics 
+### Response Times
+- Database query monitoring
+- Request-response cycle timing
+- Error rate tracking 

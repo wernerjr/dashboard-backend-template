@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { UserController } from '../controllers/UserController';
-import { authenticate, authorize } from '../middlewares/auth';
+import { authenticate } from '../middlewares/authMiddleware';
 import { validateRequest } from '../middlewares/validateRequest';
-import { createUserSchema, updateUserSchema } from '../schemas/userSchema';
+import { createUserSchema, updateUserSchema, changePasswordSchema } from '../schemas/userSchema';
 
 export const userRoutes = Router();
 const userController = new UserController();
@@ -23,6 +23,12 @@ const userController = new UserController();
  *         role:
  *           type: string
  *           enum: [USER, ADMIN]
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
  *   securitySchemes:
  *     bearerAuth:
  *       type: http
@@ -148,8 +154,8 @@ userRoutes.post('/register', validateRequest(createUserSchema), userController.r
  */
 userRoutes.post('/login', userController.login);
 
-// Protected routes
-userRoutes.use(authenticate);
+// Protected routes - require authentication
+userRoutes.use(authenticate); // Apply authentication middleware to all routes below
 
 /**
  * @swagger
@@ -200,6 +206,56 @@ userRoutes.get('/profile', userController.getProfile);
  */
 userRoutes.put('/profile', validateRequest(updateUserSchema), userController.updateProfile);
 
+/**
+ * @swagger
+ * /api/users/change-password:
+ *   put:
+ *     tags: [Users]
+ *     summary: Change user password
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 description: Current password
+ *               newPassword:
+ *                 type: string
+ *                 description: New password
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: Password changed successfully
+ *       400:
+ *         description: Invalid input or same password
+ *       401:
+ *         description: Current password is incorrect
+ *       404:
+ *         description: User not found
+ */
+userRoutes.put('/change-password', validateRequest(changePasswordSchema), userController.changePassword);
+
 // Admin only routes
 /**
  * @swagger
@@ -223,7 +279,7 @@ userRoutes.put('/profile', validateRequest(updateUserSchema), userController.upd
  *       403:
  *         description: Forbidden - Admin access required
  */
-userRoutes.get('/', authorize('ADMIN'), userController.listUsers);
+userRoutes.get('/', userController.listUsers);
 
 /**
  * @swagger
@@ -249,4 +305,4 @@ userRoutes.get('/', authorize('ADMIN'), userController.listUsers);
  *       404:
  *         description: User not found
  */
-userRoutes.delete('/:id', authorize('ADMIN'), userController.deleteUser); 
+userRoutes.delete('/:id', userController.deleteUser); 
