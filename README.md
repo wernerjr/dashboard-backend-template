@@ -110,10 +110,6 @@ http://localhost:3001/api-docs
 
 This project is licensed under the ISC License - see the [LICENSE](LICENSE) file for details.
 
-## 👥 Authors
-
-- Your Name - Initial work
-
 ## 🙏 Acknowledgments
 
 - Express.js
