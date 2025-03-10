@@ -1,7 +1,7 @@
 {
-  "name": "team-management-backend",
+  "name": "dashboard-backend-template",
   "version": "1.0.0",
-  "description": "Team Management Backend API",
+  "description": "A modern, scalable backend template for dashboard applications",
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
@@ -15,7 +15,8 @@
     "user:change-role": "ts-node src/scripts/changeUserRole.ts"
   },
   "keywords": [
-    "team-management",
+    "dashboard",
+    "template",
     "api",
     "typescript",
     "express",

@@ -29,9 +29,9 @@ const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Team Management API',
+      title: 'Dashboard Backend API',
       version: '1.0.0',
-      description: 'API documentation for Team Management System',
+      description: 'API documentation for Dashboard Backend Template',
     },
     servers: [
       {

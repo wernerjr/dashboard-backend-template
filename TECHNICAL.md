@@ -1,9 +1,8 @@
 # Technical Documentation
 
-## 📐 Architecture
+## Architecture Overview
 
-### System Overview
-The Team Management API is built on a modern, scalable architecture following clean code principles and industry best practices.
+The Dashboard Backend Template is built on a modern, scalable architecture following clean code principles and industry best practices.
 
 ```
 src/
