@@ -1,102 +1,125 @@
-# Team Management API
+# Dashboard Backend Template
 
-A robust REST API for team management built with Node.js, Express, TypeScript, and Prisma.
+This is a backend template for building modern web applications with best practices and a solid foundation.
 
 ## 🚀 Features
 
-- **User Management**: Complete authentication and authorization system
-- **Role-Based Access Control**: Support for different user roles (Admin, User)
-- **RESTful API**: Well-structured endpoints following REST principles
-- **API Documentation**: Interactive Swagger documentation
-- **Database Integration**: PostgreSQL with Prisma ORM
-- **Security**: JWT authentication, password hashing, and CORS protection
-- **TypeScript**: Full type safety and better developer experience
+- Clean and scalable architecture
+- Authentication and authorization
+- RESTful API endpoints
+- Database integration
+- Error handling and logging
+- Environment configuration
+- Security best practices
+- API documentation
+- Testing setup
 
-## 📋 Prerequisites
+## 💡 Using this template
 
-Before you begin, ensure you have met the following requirements:
+1. Click the "Use this template" button above
+2. Create a new repository
+3. Clone your new repository:
+```bash
+git clone https://github.com/your-username/your-project-name.git
+cd your-project-name
+```
 
-- Node.js >= 14.x
-- PostgreSQL >= 13
+## 📦 Prerequisites
+
+Before you begin, ensure you have the following installed:
+- Node.js (v18 or higher)
 - npm or yarn
+- Git
 
 ## 🛠️ Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/team-management-backend.git
-cd team-management-backend
+git clone https://github.com/yourusername/dashboard-backend-template.git
 ```
 
-2. Install dependencies:
+2. Navigate to the project directory:
+```bash
+cd dashboard-backend-template
+```
+
+3. Install dependencies:
 ```bash
 npm install
+# or
+yarn install
 ```
 
-3. Set up environment variables:
-```bash
-cp .env.example .env
-```
-Then edit `.env` with your configuration.
-
-4. Set up the database:
-```bash
-npm run prisma:generate
-npm run prisma:migrate
+4. Create a `.env` file in the root directory and configure your environment variables:
+```env
+PORT=3000
+NODE_ENV=development
+DATABASE_URL=your_database_url
+JWT_SECRET=your_jwt_secret
 ```
 
 ## 🚀 Running the Application
 
-### Development
+### Development mode
 ```bash
 npm run dev
+# or
+yarn dev
 ```
 
-### Production
+### Production mode
 ```bash
 npm run build
 npm start
+# or
+yarn build
+yarn start
 ```
 
-## 📚 API Documentation
+## 📝 API Documentation
 
-Once the application is running, you can access the Swagger documentation at:
+The API documentation is available at `/api-docs` when running the server.
+
+## 🧪 Testing
+
+Run tests:
+```bash
+npm test
+# or
+yarn test
 ```
-http://localhost:3001/api-docs
+
+Run tests with coverage:
+```bash
+npm run test:coverage
+# or
+yarn test:coverage
 ```
 
-## 🛠️ Available Scripts
+## 📁 Project Structure
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm test` - Run tests
-- `npm run prisma:generate` - Generate Prisma client
-- `npm run prisma:migrate` - Run database migrations
-- `npm run prisma:studio` - Open Prisma Studio
-- `npm run user:change-role` - Interactive CLI to change user roles
+```
+src/
+├── config/         # Configuration files
+├── controllers/    # Request handlers
+├── middlewares/    # Custom middleware
+├── models/         # Database models
+├── routes/         # API routes
+├── services/       # Business logic
+├── utils/          # Utility functions
+└── app.js         # App entry point
+```
 
-## 📝 API Endpoints
+## 🔒 Security
 
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-
-### Users
-- `GET /api/users/profile` - Get user profile
-- `PUT /api/users/profile` - Update user profile
-- `GET /api/users` - List all users (Admin only)
-- `DELETE /api/users/:id` - Delete user (Admin only)
-
-## 🔒 Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| PORT | Server port | 3001 |
-| NODE_ENV | Environment | development |
-| DATABASE_URL | PostgreSQL connection URL | - |
-| JWT_SECRET | JWT secret key | - |
-| FRONTEND_URL | Frontend URL for CORS | http://localhost:3000 |
+This template includes several security best practices:
+- CORS configuration
+- Helmet security headers
+- Rate limiting
+- Input validation
+- JWT authentication
+- Password hashing
+- XSS protection
 
 ## 🤝 Contributing
 
@@ -108,15 +131,15 @@ http://localhost:3001/api-docs
 
 ## 📄 License
 
-This project is licensed under the ISC License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
 - Express.js
-- Prisma
-- TypeScript
-- Node.js community 
+- MongoDB/PostgreSQL
+- JWT
+- And all other open source libraries used in this project
 
-## ✨ Author
+---
 
-Made with ❤️ by [Werner](https://github.com/wernerjr)
+Created with ❤️ by [Werner](https://github.com/wernerjr)
